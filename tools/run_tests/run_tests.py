@@ -404,7 +404,7 @@ class PythonLanguage(object):
 
 
   def pre_build_steps(self):
-    return []
+    return [['tools\\run_tests\\pre_build_c.bat']]
 
   def make_targets(self):
     if platform_string() == 'windows':
