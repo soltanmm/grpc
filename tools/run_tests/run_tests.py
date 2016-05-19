@@ -407,10 +407,7 @@ class PythonLanguage(object):
     return [['tools\\run_tests\\pre_build_c.bat']]
 
   def make_targets(self):
-    if platform_string() == 'windows':
-      return ['grpc_protoc_plugins']
-    else:
-      return ['grpc_python_plugin']
+    return ['grpc_python_plugin']
 
   def make_options(self):
     return []
