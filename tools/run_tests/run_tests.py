@@ -384,7 +384,7 @@ class PythonLanguage(object):
       tests_json = json.load(tests_json_file)
     environment = dict(_FORCE_ENVIRON_FOR_WRAPPERS)
     environment['PYTHONPATH'] = '{}:{}'.format(
-      os.path.abspath('src/python/gens'), 
+      os.path.abspath('src/python/gens'),
       os.path.abspath('src/python/grpcio_health_checking'))
     if self.config.build_config != 'gcov':
       return [self.config.job_spec(
@@ -407,7 +407,7 @@ class PythonLanguage(object):
     return []
 
   def make_targets(self):
-    return ['static_c', 'grpc_python_plugin', 'shared_c']
+    return ['grpc_python_plugin']
 
   def make_options(self):
     return []
