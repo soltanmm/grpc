@@ -407,7 +407,10 @@ class PythonLanguage(object):
     return []
 
   def make_targets(self):
-    return ['grpc_python_plugin']
+    if platform_string() == 'windows':
+      return ['grpc_protoc_plugins']
+    else:
+      return ['grpc_python_plugin']
 
   def make_options(self):
     return []
