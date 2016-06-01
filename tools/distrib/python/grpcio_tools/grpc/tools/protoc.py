@@ -33,6 +33,14 @@ import sys
 
 from grpc.tools import protoc_compiler
 
+def main(command_arguments):
+  """Run the protocol buffer compiler with the given command-line arguments.
+
+  Args:
+    command_arguments: a list (yes, it *must* be a list) of strings representing
+        command line arguments to `protoc`.
+  """
+  return protoc_compiler.run_main(command_arguments)
 
 if __name__ == '__main__':
-  protoc_compiler.run_main(sys.argv)
+  sys.exit(main(sys.argv))
