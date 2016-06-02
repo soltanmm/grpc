@@ -30,6 +30,8 @@
 import json
 import unittest
 
+import pkg_resources
+
 import tests
 
 
@@ -44,8 +46,8 @@ class Sanity(unittest.TestCase):
         for test_case_class in tests._loader.iterate_suite_cases(loader.suite)]
     test_suite_names = sorted(set(test_suite_names))
 
-    with open('src/python/grpcio/tests/tests.json') as tests_json_file:
-      tests_json = json.load(tests_json_file)
+    tests_json_string = pkg_resources.resource_string('tests', 'tests.json')
+    tests_json = json.loads(tests_json_string)
     self.assertListEqual(test_suite_names, tests_json)
 
 

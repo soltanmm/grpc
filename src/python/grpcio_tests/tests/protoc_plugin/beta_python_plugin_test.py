@@ -50,6 +50,11 @@ from grpc.framework.foundation import future
 from grpc.framework.interfaces.face import face
 from tests.unit.framework.common import test_constants
 
+import tests.protoc_plugin.protos.payload.test_payload_pb2 as payload_pb2
+import tests.protoc_plugin.protos.requests.r.test_requests_pb2 as request_pb2
+import tests.protoc_plugin.protos.responses.test_responses_pb2 as response_pb2
+import tests.protoc_plugin.protos.service.test_service_pb2 as service_pb2
+
 # Identifiers of entities we expect to find in the generated module.
 SERVICER_IDENTIFIER = 'BetaTestServiceServicer'
 STUB_IDENTIFIER = 'BetaTestServiceStub'
@@ -245,63 +250,13 @@ class PythonPluginTest(unittest.TestCase):
   """
 
   def setUp(self):
-    # Assume that the appropriate protoc and grpc_python_plugins are on the
-    # path.
-    protoc_command = 'protoc'
-    protoc_plugin_filename = distutils.spawn.find_executable(
-        'grpc_python_plugin')
-    if not os.path.isfile(protoc_command):
-      # Assume that if we haven't built protoc that it's on the system.
-      protoc_command = 'protoc'
-
-    # Ensure that the output directory exists.
-    self.outdir = tempfile.mkdtemp()
-
-    # Find all proto files
-    paths = []
-    root_dir = os.path.dirname(os.path.realpath(__file__))
-    proto_dir = os.path.join(root_dir, 'protos')
-    for walk_root, _, filenames in os.walk(proto_dir):
-      for filename in filenames:
-        if filename.endswith('.proto'):
-          path = os.path.join(walk_root, filename)
-          paths.append(path)
-
-    # Invoke protoc with the plugin.
-    cmd = [
-        protoc_command,
-        '--plugin=protoc-gen-python-grpc=%s' % protoc_plugin_filename,
-        '-I %s' % root_dir,
-        '--python_out=%s' % self.outdir,
-        '--python-grpc_out=%s' % self.outdir
-    ] + paths
-    subprocess.check_call(' '.join(cmd), shell=True, env=os.environ,
-                          cwd=os.path.dirname(os.path.realpath(__file__)))
-
-    # Generated proto directories dont include __init__.py, but
-    # these are needed for python package resolution
-    for walk_root, _, _ in os.walk(os.path.join(self.outdir, 'protos')):
-      path = os.path.join(walk_root, '__init__.py')
-      open(path, 'a').close()
-
-    sys.path.insert(0, self.outdir)
-
-    import protos.payload.test_payload_pb2 as payload_pb2  # pylint: disable=g-import-not-at-top
-    import protos.requests.r.test_requests_pb2 as request_pb2  # pylint: disable=g-import-not-at-top
-    import protos.responses.test_responses_pb2 as response_pb2  # pylint: disable=g-import-not-at-top
-    import protos.service.test_service_pb2 as service_pb2  # pylint: disable=g-import-not-at-top
     self._payload_pb2 = payload_pb2
     self._request_pb2 = request_pb2
     self._response_pb2 = response_pb2
     self._service_pb2 = service_pb2
 
   def tearDown(self):
-    try:
-      shutil.rmtree(self.outdir)
-    except OSError as exc:
-      if exc.errno != errno.ENOENT:
-        raise
-    sys.path.remove(self.outdir)
+    pass
 
   def testImportAttributes(self):
     # check that we can access the generated module and its members.

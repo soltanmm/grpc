@@ -79,6 +79,11 @@ GRPC_ROOT = os.path.abspath(
 
 GRPC_PYTHON_ROOT = os.path.join(GRPC_ROOT, 'tools/distrib/python/grpcio_tools')
 
+# TODO(atash): once namespace packages don't break auditwheel, use a namespace
+# package instead of duplicating the init file in grpcio to grpcio-tools.
+GRPC_PYTHON_GRPCIO_INIT = os.path.join(GRPC_ROOT, 'src/python/grpcio/grpc/__init__.py')
+GRPC_PYTHON_GRPCIO_TOOLS_INIT = os.path.join(GRPC_PYTHON_ROOT, 'grpc/__init__.py')
+
 GRPC_PROTOBUF = os.path.join(GRPC_ROOT, 'third_party/protobuf/src')
 GRPC_PROTOC_PLUGINS = os.path.join(GRPC_ROOT, 'src/compiler')
 GRPC_PYTHON_PROTOBUF = os.path.join(GRPC_PYTHON_ROOT,
@@ -121,6 +126,7 @@ def main():
   shutil.copytree(GRPC_PROTOBUF, GRPC_PYTHON_PROTOBUF)
   shutil.copytree(GRPC_PROTOC_PLUGINS, GRPC_PYTHON_PROTOC_PLUGINS)
   shutil.copytree(GRPC_INCLUDE, GRPC_PYTHON_INCLUDE)
+  shutil.copy(GRPC_PYTHON_GRPCIO_INIT, GRPC_PYTHON_GRPCIO_TOOLS_INIT)
 
   try:
     protoc_lib_deps_content = get_deps(BAZEL_DEPS_PROTOC_LIB_QUERY)

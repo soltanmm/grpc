@@ -1,4 +1,3 @@
-#!/bin/bash
 # Copyright 2015, Google Inc.
 # All rights reserved.
 #
@@ -28,29 +27,6 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-set -ex
+# AUTO-GENERATED FROM `$REPO_ROOT/templates/src/python/grpcio/grpc_version.py.template`!!!
 
-# change to grpc repo root
-cd $(dirname $0)/../..
-
-TOX_PYTHON_ENV="$1"
-
-ROOT=`pwd`
-export CFLAGS="-I$ROOT/include -std=gnu99 -fno-wrapv"
-export GRPC_PYTHON_BUILD_WITH_CYTHON=1
-
-if [ "$CONFIG" = "gcov" ]
-then
-  export GRPC_PYTHON_ENABLE_CYTHON_TRACING=1
-fi
-
-tox -e ${TOX_PYTHON_ENV} --notest
-
-$ROOT/.tox/${TOX_PYTHON_ENV}/bin/pip install cython
-$ROOT/.tox/${TOX_PYTHON_ENV}/bin/pip install $ROOT
-$ROOT/.tox/${TOX_PYTHON_ENV}/bin/python $ROOT/tools/distrib/python/make_grpcio_tools.py
-$ROOT/.tox/${TOX_PYTHON_ENV}/bin/pip install $ROOT/tools/distrib/python/grpcio_tools
-$ROOT/.tox/${TOX_PYTHON_ENV}/bin/python $ROOT/src/python/grpcio_health_checking/setup.py preprocess
-$ROOT/.tox/${TOX_PYTHON_ENV}/bin/pip install $ROOT/src/python/grpcio_health_checking
-$ROOT/.tox/${TOX_PYTHON_ENV}/bin/python $ROOT/src/python/grpcio_tests/setup.py preprocess
-$ROOT/.tox/${TOX_PYTHON_ENV}/bin/python $ROOT/src/python/grpcio_tests/setup.py build_proto_modules
+VERSION='0.15.0.dev0'

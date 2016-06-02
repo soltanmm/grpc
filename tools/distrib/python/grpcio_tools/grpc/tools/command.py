@@ -1,5 +1,4 @@
-#!/bin/bash
-# Copyright 2015, Google Inc.
+# Copyright 2016, Google Inc.
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -28,29 +27,44 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-set -ex
+import os
+import sys
 
-# change to grpc repo root
-cd $(dirname $0)/../..
+import setuptools
 
-TOX_PYTHON_ENV="$1"
+from grpc.tools import protoc
 
-ROOT=`pwd`
-export CFLAGS="-I$ROOT/include -std=gnu99 -fno-wrapv"
-export GRPC_PYTHON_BUILD_WITH_CYTHON=1
 
-if [ "$CONFIG" = "gcov" ]
-then
-  export GRPC_PYTHON_ENABLE_CYTHON_TRACING=1
-fi
+class BuildProtoModules(setuptools.Command):
+  """Command to generate project *_pb2.py modules from proto files."""
 
-tox -e ${TOX_PYTHON_ENV} --notest
+  description = 'build grpc protobuf modules'
+  user_options = []
 
-$ROOT/.tox/${TOX_PYTHON_ENV}/bin/pip install cython
-$ROOT/.tox/${TOX_PYTHON_ENV}/bin/pip install $ROOT
-$ROOT/.tox/${TOX_PYTHON_ENV}/bin/python $ROOT/tools/distrib/python/make_grpcio_tools.py
-$ROOT/.tox/${TOX_PYTHON_ENV}/bin/pip install $ROOT/tools/distrib/python/grpcio_tools
-$ROOT/.tox/${TOX_PYTHON_ENV}/bin/python $ROOT/src/python/grpcio_health_checking/setup.py preprocess
-$ROOT/.tox/${TOX_PYTHON_ENV}/bin/pip install $ROOT/src/python/grpcio_health_checking
-$ROOT/.tox/${TOX_PYTHON_ENV}/bin/python $ROOT/src/python/grpcio_tests/setup.py preprocess
-$ROOT/.tox/${TOX_PYTHON_ENV}/bin/python $ROOT/src/python/grpcio_tests/setup.py build_proto_modules
+  def initialize_options(self):
+    pass
+
+  def finalize_options(self):
+    pass
+
+  def run(self):
+    # due to limitations of the proto generator, we require that only *one*
+    # directory is provided as an 'include' directory. We assume it's the '' key
+    # to `self.distribution.package_dir` (and get a key error if it's not
+    # there).
+    proto_files = []
+    inclusion_root = os.path.abspath(self.distribution.package_dir[''])
+    for root, _, files in os.walk(inclusion_root):
+      for filename in files:
+        if filename.endswith('.proto'):
+          proto_files.append(os.path.abspath(os.path.join(root, filename)))
+
+    for proto_file in proto_files:
+      command = [
+          'grpc.tools.protoc',
+          '--proto_path={}'.format(inclusion_root),
+          '--python_out={}'.format(inclusion_root),
+          '--grpc_python_out={}'.format(inclusion_root),
+      ] + [proto_file]
+      if protoc.main(command) != 0:
+        sys.stderr.write('warning: {} failed'.format(command))
