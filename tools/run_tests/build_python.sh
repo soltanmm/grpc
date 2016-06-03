@@ -33,7 +33,10 @@ set -ex
 # change to grpc repo root
 cd $(dirname $0)/../..
 
-TOX_PYTHON_ENV="$1"
+PYTHON="$1"
+VENV="$2"
+VENV_RELATIVE_PYTHON="$3"
+TOOLCHAIN="$4"
 
 ROOT=`pwd`
 export CFLAGS="-I$ROOT/include -std=gnu99 -fno-wrapv"
@@ -44,13 +47,25 @@ then
   export GRPC_PYTHON_ENABLE_CYTHON_TRACING=1
 fi
 
-tox -e ${TOX_PYTHON_ENV} --notest
+($PYTHON -m virtualenv $VENV || true)
+VENV_PYTHON=$VENV/$VENV_RELATIVE_PYTHON
 
-$ROOT/.tox/${TOX_PYTHON_ENV}/bin/pip install cython
-$ROOT/.tox/${TOX_PYTHON_ENV}/bin/pip install $ROOT
-$ROOT/.tox/${TOX_PYTHON_ENV}/bin/python $ROOT/tools/distrib/python/make_grpcio_tools.py
-$ROOT/.tox/${TOX_PYTHON_ENV}/bin/pip install $ROOT/tools/distrib/python/grpcio_tools
-$ROOT/.tox/${TOX_PYTHON_ENV}/bin/python $ROOT/src/python/grpcio_health_checking/setup.py preprocess
-$ROOT/.tox/${TOX_PYTHON_ENV}/bin/pip install $ROOT/src/python/grpcio_health_checking
-$ROOT/.tox/${TOX_PYTHON_ENV}/bin/python $ROOT/src/python/grpcio_tests/setup.py preprocess
-$ROOT/.tox/${TOX_PYTHON_ENV}/bin/python $ROOT/src/python/grpcio_tests/setup.py build_proto_modules
+# pip-installs the directory specified. Used because on MSYS the vanilla Windows
+# Python gets confused when parsing paths.
+pip_install_dir() {
+  PWD=`pwd`
+  cd $1
+  ($VENV_PYTHON setup.py build_ext -c $TOOLCHAIN || true)
+  $VENV_PYTHON -m pip install --upgrade --force-reinstall .
+  cd $PWD
+}
+
+$VENV_PYTHON -m pip install --upgrade pip setuptools
+$VENV_PYTHON -m pip install cython
+pip_install_dir $ROOT
+$VENV_PYTHON $ROOT/tools/distrib/python/make_grpcio_tools.py
+pip_install_dir $ROOT/tools/distrib/python/grpcio_tools
+$VENV_PYTHON $ROOT/src/python/grpcio_health_checking/setup.py preprocess
+pip_install_dir $ROOT/src/python/grpcio_health_checking
+$VENV_PYTHON $ROOT/src/python/grpcio_tests/setup.py preprocess
+$VENV_PYTHON $ROOT/src/python/grpcio_tests/setup.py build_proto_modules
