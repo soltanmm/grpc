@@ -48,7 +48,6 @@ class ObjectiveCGrpcGenerator : public grpc::protobuf::compiler::CodeGenerator {
                         const ::grpc::string &parameter,
                         grpc::protobuf::compiler::GeneratorContext *context,
                         ::grpc::string *error) const {
-
     if (file->service_count() == 0) {
       // No services.  Do nothing.
       return true;
@@ -61,17 +60,17 @@ class ObjectiveCGrpcGenerator : public grpc::protobuf::compiler::CodeGenerator {
       // Generate .pbrpc.h
 
       ::grpc::string imports = ::grpc::string("#import \"") + file_name +
-        ".pbobjc.h\"\n\n"
-        "#import <ProtoRPC/ProtoService.h>\n"
-        "#import <RxLibrary/GRXWriteable.h>\n"
-        "#import <RxLibrary/GRXWriter.h>\n";
+                               ".pbobjc.h\"\n\n"
+                               "#import <ProtoRPC/ProtoService.h>\n"
+                               "#import <RxLibrary/GRXWriteable.h>\n"
+                               "#import <RxLibrary/GRXWriter.h>\n";
 
       // TODO(jcanizales): Instead forward-declare the input and output types
       // and import the files in the .pbrpc.m
       ::grpc::string proto_imports;
       for (int i = 0; i < file->dependency_count(); i++) {
-        ::grpc::string header = grpc_objective_c_generator::MessageHeaderName(
-            file->dependency(i));
+        ::grpc::string header =
+            grpc_objective_c_generator::MessageHeaderName(file->dependency(i));
         proto_imports += ::grpc::string("#import \"") + header + "\"\n";
       }
 
@@ -81,21 +80,22 @@ class ObjectiveCGrpcGenerator : public grpc::protobuf::compiler::CodeGenerator {
         declarations += grpc_objective_c_generator::GetHeader(service);
       }
 
-      static const ::grpc::string kNonNullBegin = "\nNS_ASSUME_NONNULL_BEGIN\n\n";
+      static const ::grpc::string kNonNullBegin =
+          "\nNS_ASSUME_NONNULL_BEGIN\n\n";
       static const ::grpc::string kNonNullEnd = "\nNS_ASSUME_NONNULL_END\n";
 
-      Write(context, file_name + ".pbrpc.h",
-          imports + '\n' + proto_imports + '\n' + kNonNullBegin + 
-          declarations + kNonNullEnd);
+      Write(context, file_name + ".pbrpc.h", imports + '\n' + proto_imports +
+                                                 '\n' + kNonNullBegin +
+                                                 declarations + kNonNullEnd);
     }
 
     {
       // Generate .pbrpc.m
 
       ::grpc::string imports = ::grpc::string("#import \"") + file_name +
-        ".pbrpc.h\"\n\n"
-        "#import <ProtoRPC/ProtoRPC.h>\n"
-        "#import <RxLibrary/GRXWriter+Immediate.h>\n";
+                               ".pbrpc.h\"\n\n"
+                               "#import <ProtoRPC/ProtoRPC.h>\n"
+                               "#import <RxLibrary/GRXWriter+Immediate.h>\n";
 
       ::grpc::string definitions;
       for (int i = 0; i < file->service_count(); i++) {
@@ -112,7 +112,7 @@ class ObjectiveCGrpcGenerator : public grpc::protobuf::compiler::CodeGenerator {
  private:
   // Write the given code into the given file.
   void Write(grpc::protobuf::compiler::GeneratorContext *context,
-              const ::grpc::string &filename, const ::grpc::string &code) const {
+             const ::grpc::string &filename, const ::grpc::string &code) const {
     std::unique_ptr<grpc::protobuf::io::ZeroCopyOutputStream> output(
         context->Open(filename));
     grpc::protobuf::io::CodedOutputStream coded_out(output.get());
